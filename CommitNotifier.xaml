@@ -1,0 +1,62 @@
+﻿<tn:TaskbarNotifier x:Class="TfsCommitMonitor.CommitNotifier"
+    xmlns:tn="clr-namespace:WPFTaskbarNotifier;assembly=WPFTaskbarNotifier"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="TFS Commit Monitor" x:Name="ThisControl" mc:Ignorable="d" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" Height="Auto" Width="Auto" Background="White" BorderBrush="Black" BorderThickness="1" WindowStartupLocation="Manual" AllowsTransparency="False" ResizeMode="NoResize" ShowInTaskbar="False" SizeToContent="WidthAndHeight" WindowStyle="None">
+    <tn:TaskbarNotifier.Resources>
+
+        <DataTemplate x:Key="ItemsTemplate" >
+            <Border BorderThickness="1" BorderBrush="#6AB4A37F" Height="auto" Width="auto">
+                <Grid Background="{Binding Path=Backcolor}" Height="auto" Width="auto">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="50" />
+                    <ColumnDefinition Width="100" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,5,0,0" VerticalAlignment="Top" Orientation="Horizontal">
+                    <TextBlock  Text="{Binding Path=FolderId}" FontWeight="Bold" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,5,0,0" VerticalAlignment="Top" Orientation="Horizontal">
+                    <TextBlock  Text="{Binding Path=ChangesetNumber}" FontWeight="Bold" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Margin="0,5,0,0" VerticalAlignment="Top" Orientation="Horizontal">
+                    <TextBlock  Text="{Binding Path=Title}" FontWeight="Bold" />                    
+                </StackPanel>
+                <Label Grid.Column="3" Margin="0,-1,0,0" HorizontalAlignment="Left" ToolTip="Click to open" Width="auto">
+                    <Hyperlink Click="Item_Click" Tag="{Binding}">
+                        <TextBlock Text="{Binding Path=Message}" TextWrapping="Wrap" Width="auto" />
+                    </Hyperlink>
+                </Label>
+            </Grid>
+            </Border>
+        </DataTemplate>
+
+    </tn:TaskbarNotifier.Resources>
+
+    <Border BorderThickness="1" BorderBrush="#ffd4d0c8" Height="auto" Width="auto">
+        <Grid Margin="1,1,1,1" ShowGridLines="False" VerticalAlignment="Stretch" Background="White" Height="auto" Width="auto">
+            <Grid.RowDefinitions >
+                <RowDefinition Height="20" />                
+                <RowDefinition Height="*"  />
+            </Grid.RowDefinitions>
+
+            <Label Margin="1,-3,0,0" FontSize="14" FontWeight="Bold" Content="TFS commit monitor" Foreground="Black" Height="auto" Width="auto" HorizontalAlignment="Left" Grid.RowSpan="2"></Label>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="auto" Height="auto" Margin="1,0,6,6" Width="auto">
+                <ItemsControl Name="ItemsList"  BorderThickness="1"
+                       ItemsSource="{Binding ElementName=ThisControl, Path=NotifyContent}"
+                       ItemTemplate="{StaticResource ItemsTemplate}" Height="auto" Width="auto">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" Width="Auto"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+    </Border>
+</tn:TaskbarNotifier>
