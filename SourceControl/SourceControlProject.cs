@@ -82,7 +82,7 @@ namespace TfsCommitMonitor.SourceControl
             {
                 foreach (string folderId in _monitoredItems.Keys)
                 {
-                    var changesetsFolder = _versionControlServer.QueryHistory(string.Format("{0}/{1}", _monitoredItems[folderId], wildcard), VersionSpec.Latest, 0, RecursionType.Full, null, null, null, int.MaxValue, true, false);
+                    var changesetsFolder = _versionControlServer.QueryHistory(string.Format("{0}/{1}", _monitoredItems[folderId], wildcard), VersionSpec.Latest, 0, RecursionType.Full, null, new ChangesetVersionSpec(1), VersionSpec.Latest, int.MaxValue, true, false);
 
                     foreach (Changeset c in changesetsFolder)
                         changesets.Add(new TfsCheckin(c, ServerConfiguration.Id, ServerConfiguration.TfsTeamProjectCollection, folderId, _monitoredItems[folderId]));

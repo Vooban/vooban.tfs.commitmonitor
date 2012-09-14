@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Linq;
@@ -219,18 +220,31 @@ namespace TfsCommitMonitor
 
                 if (!string.IsNullOrEmpty(tstxtSearch.Text))
                 {
-                    // On recherche dans notre history pour les valeurs qu'ont veut
-                    var checkins = (from c in _changesetIds.Values
-                                    where (!string.IsNullOrEmpty(c.Comment) && c.Comment.ToLower().Contains(tstxtSearch.Text.ToLower())) ||
-                                          !string.IsNullOrEmpty(c.FolderId) && c.FolderId.ToLower().Contains(tstxtSearch.Text.ToLower()) ||
-                                          !string.IsNullOrEmpty(c.CommitterDomainName) && c.CommitterDomainName.ToLower().Contains(tstxtSearch.Text.ToLower()) ||
-                                          !string.IsNullOrEmpty(c.Committer) && c.Committer.ToLower().Contains(tstxtSearch.Text.ToLower()) ||
-                                          !string.IsNullOrEmpty(c.FolderPath) && c.FolderPath.ToLower().Contains(tstxtSearch.Text.ToLower()) ||
-                                          !string.IsNullOrEmpty(c.Owner) && c.Owner.ToLower().Contains(tstxtSearch.Text.ToLower()) ||
-                                          !string.IsNullOrEmpty(c.ServerId) && c.ServerId.ToLower().Contains(tstxtSearch.Text.ToLower()) ||
-                                          !string.IsNullOrEmpty(c.TeamProjectCollection) && c.TeamProjectCollection.ToLower().Contains(tstxtSearch.Text.ToLower()) ||
-                                          c.ChangesetId.ToString(CultureInfo.InvariantCulture).Contains(tstxtSearch.Text.ToLower())
-                                    orderby c.CreationDate descending
+                    var searchedStrings = new Dictionary<TfsCheckin, List<String>>();
+                    _changesetIds.Values.ToList().ForEach(v => {
+                        var searched= new List<string>();
+
+                        if(!string.IsNullOrEmpty(v.Comment))
+                            searched.Add(v.Comment.ToLower());
+                        if (!string.IsNullOrEmpty(v.FolderId))
+                            searched.Add(v.FolderId.ToLower());
+                        if (!string.IsNullOrEmpty(v.Committer))
+                            searched.Add(v.Committer.ToLower());
+                        if (!string.IsNullOrEmpty(v.FolderPath))
+                            searched.Add(v.FolderPath.ToLower());
+                        if (!string.IsNullOrEmpty(v.Owner))
+                            searched.Add(v.Owner.ToLower());
+                        if (!string.IsNullOrEmpty(v.ServerId))
+                            searched.Add(v.ServerId.ToLower());
+                        if (!string.IsNullOrEmpty(v.TeamProjectCollection))
+                            searched.Add(v.TeamProjectCollection.ToLower());
+                        searched.Add(v.ChangesetId.ToString(CultureInfo.InvariantCulture));
+
+                        searchedStrings.Add(v, searched);
+                    });
+
+                    var checkins = (from c in searchedStrings.Keys
+                                    where searchedStrings[c].Any(v=> Regex.IsMatch(v, tstxtSearch.Text.ToLower()))
                                     select c).ToList();
 
                     Invoke(new MethodInvoker(() => tsSearchProgress.PerformStep()));
@@ -483,8 +497,8 @@ namespace TfsCommitMonitor
 
         private bool IsUserDisplayed(TfsCheckin currentChangeset)
         {
-            var ignoredUsers = _configuration.IgnoredUsers.ToList(); 
-            return ignoredUsers.All(c => c.Id != currentChangeset.Committer);
+            var ignoredUsers = _configuration.IgnoredUsers.ToList();
+            return ignoredUsers.All(c => !c.Id.Equals(currentChangeset.Committer, StringComparison.InvariantCultureIgnoreCase) && !c.Id.Equals(currentChangeset.CommitterDomainName, StringComparison.InvariantCultureIgnoreCase));
         }
 
         #endregion
